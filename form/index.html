@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>WebPush Custom Activity</title>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/postmonger.js"></script>
+<script type="text/javascript" src="customActivity.js"></script>
+<link rel="stylesheet" type="text/css" href="css/salesforce-lightning-design-system.min.css">
+
+
+
+<!--Styles-->
+<style type="text/css">
+	html{
+		background: white;
+	}
+	body {
+		padding: 20px;
+		margin: 0;
+		background: white;
+	}
+	.step {
+		display: none;
+	}
+	#step1 {
+		display: block;
+	}
+	input[type="text"]{
+		border-bottom: 1px solid #ccc;
+		border-radius: 0;
+	}
+	#drop{
+		width: 100%;
+		height: 100%;
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid #ccc;
+		border-radius: 10px;
+		font-family: "Salesforce Sans",Arial,sans-serif;
+		font-size: 24px;
+		line-height: 1.25;
+		color: #3e3e3c;
+		letter-spacing: .0625rem;
+		transition: all ease .3s;
+	}
+	.drop_container{
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		width: 192px;
+		height: 192px;
+		margin: 20px;
+	}
+	.drop_container label{
+		width: 100%;
+		text-align: center;
+	}
+	#icon{
+		display: none;
+	}
+	#image_preview{
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		border-radius: 10px;
+		display: none;
+	}
+	#image_size{
+		cursor: default;
+		user-select: none;
+	}
+	.click_event_label{
+		margin: 10px 0px;
+	}
+	#link_open_container{
+		margin: 20px;
+	}
+	#error_div{
+		color: red;
+		margin-top: 10px;
+		font-size: 15px;
+	}
+</style>
+
+</head>
+<body>
+<div id="step1" class="step">
+	<label for="titulo" class="slds-form-element__label slds-text-title_caps">Titulo</label>
+	<input type="text" name="title" id="title" class="slds-input slds-input_bare slds-p-around_none" maxlength="30">
+
+	<label for="titulo" class="slds-form-element__label slds-text-title_caps">Mensaje</label>
+	<input type="text" name="message" id="message" class="slds-input slds-input_bare slds-p-around_none" maxlength="">
+	
+	<label class="slds-form-element__label slds-text-title_caps click_event_label" for="click_event">Al pulsar</label>
+	<br>
+	<div class="slds-form-element__control">
+		<div class="slds-select_container">
+			<select class="slds-select" id="click_event">
+				<option value="open_url">Abrir enlace</option>
+			</select>
+		</div>
+	</div>
+
+	<div id="link_open_container">
+		<label for="url" class="slds-form-element__label slds-text-title_caps">Enlace</label>
+		<input type="text" name="url" id="url" class="slds-input slds-input_bare slds-p-around_none">
+	</div>
+
+
+	<label for="icon_link" class="slds-form-element__label slds-text-title_caps">Enlace del icono</label>
+	<input type="text" name="icon_link" id="icon_link" class="slds-input slds-input_bare slds-p-around_none">
+
+	<div class="drop_container">
+		<label class="slds-form-element__label slds-text-title_caps">Icono</label>
+		<div id="drop">
+		<img src="" id="image_preview" draggable="false">
+		<font id="image_size">192x192</font>
+		</div>
+	</div>
+	<input type="file" id="icon"></div>
+	<div id="error_div" class="slds-input slds-input_bare slds-p-around_none"></div>
+</div>
+<script type="text/javascript">
+//var base64;
+(function(){
+function cancel(e){
+	e.stopPropagation();
+	e.preventDefault();
+}
+
+/*function preview_image(){
+	if(input.files && input.files[0]){
+		var reader = new FileReader();
+
+		reader.onload = function(e){
+			preview.display = 'block';
+			base64 = e.target.result;
+			preview.setAttribute('src', e.target.result);
+			preview.style.display = 'block';
+			image_size_font.style.display = 'none';
+		}
+		reader.readAsDataURL(input.files[0]);
+	}else{
+		preview.style.display = 'none';
+		image_size_font.style.display = 'block';
+		base64 = null;
+	}
+}*/
+
+function preview_image(image){
+	preview.display = 'block';
+	preview.setAttribute('src', image);
+	preview.style.display = 'block';
+	image_size_font.style.display = 'none';
+}
+
+
+var icon_link = document.getElementById('icon_link');
+var input = document.getElementById('icon');
+var preview = document.getElementById('image_preview');
+var image_size_font = document.getElementById('image_size');
+var error_div = document.getElementById('error_div');
+	
+
+icon_link.addEventListener('change', e => {
+	var link = icon_link.value;
+	error_div.innerHTML = '';
+	if(link.match(/[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/) != null){
+		if(link.split(':')[0] != 'https'){
+		    return error_div.innerHTML = 'El enlace de la imagen debe de ser HTTPS';	
+		}
+		preview_image(link);
+	}else{
+		preview.style.display = 'none';
+		image_size_font.style.display = 'block';
+	}
+});
+
+input.addEventListener('change', e => {
+	preview_image();
+});
+
+
+})();
+
+
+
+</script>
+</body>
+</html>
