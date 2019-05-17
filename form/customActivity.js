@@ -30,7 +30,7 @@
 		$.ajax({
 			type: 'POST',
 			url: heroku_url + "/message_exists",
-			data: JSON.parse({"id": id}),
+			data: JSON.stringify({"id": id}),
 			dataType: 'json',
 			contentType: 'application/json',
 			success: function(r){
