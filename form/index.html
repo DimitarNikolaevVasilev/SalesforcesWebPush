@@ -28,10 +28,6 @@
 	#step1 {
 		display: block;
 	}
-	input[type="text"]{
-		border-bottom: 1px solid #ccc;
-		border-radius: 0;
-	}
 	#drop{
 		width: 100%;
 		height: 100%;
@@ -87,18 +83,42 @@
 		margin-top: 10px;
 		font-size: 15px;
 	}
+	#loading_image{
+		display: none;
+	}
+	.error_icon{
+		fill: rgb(212, 80, 76);
+		position: absolute;
+		left: 63px;
+		top: 20px;
+		width: 4rem;
+		height: 4rem;
+	}
+	#error_image{
+		display: none;
+	}
 </style>
 
 </head>
 <body>
 <div id="step1" class="step">
-	<label for="titulo" class="slds-form-element__label slds-text-title_caps">Titulo</label>
-	<input type="text" name="title" id="title" class="slds-input slds-input_bare slds-p-around_none" maxlength="30">
+	<div class="slds-form-element">
+		<label class="slds-form-element__label" for="title">Titulo(<font style="color:red">*</font>)</label>
+		<div class="slds-form-element__control">
+			<input type="text" id="title" name="title" placeholder="Titulo de su mensaje" class="slds-input" maxlength="30" />
+		</div>
+		<div class="slds-text-color_error"></div>
+	</div>
 
-	<label for="titulo" class="slds-form-element__label slds-text-title_caps">Mensaje</label>
-	<input type="text" name="message" id="message" class="slds-input slds-input_bare slds-p-around_none" maxlength="">
+	<div class="slds-form-element">
+		<label class="slds-form-element__label" for="message">Mensaje(<font style="color:red">*</font>)</label>
+		<div class="slds-form-element__control">
+			<textarea id="message" name="message" class="slds-textarea" placeholder="¿Cúal es su mensaje?" rows="5"></textarea>
+		</div>
+		<div class="slds-text-color_error"></div>
+	</div>
 	
-	<label class="slds-form-element__label slds-text-title_caps click_event_label" for="click_event">Al pulsar</label>
+	<label class="slds-form-element__label click_event_label" for="click_event">Al pulsar</label>
 	<br>
 	<div class="slds-form-element__control">
 		<div class="slds-select_container">
@@ -108,20 +128,34 @@
 		</div>
 	</div>
 
-	<div id="link_open_container">
-		<label for="url" class="slds-form-element__label slds-text-title_caps">Enlace</label>
-		<input type="text" name="url" id="url" class="slds-input slds-input_bare slds-p-around_none">
+	<div id="link_open_container" class="slds-form-element">
+		<label for="url" class="slds-form-element__label">Enlace</label>
+		<div class="slds-form-element__control">
+			<input type="text" name="url" id="url" class="slds-input" placeholder="https://www.example.com">
+		</div>
 	</div>
 
 
-	<label for="icon_link" class="slds-form-element__label slds-text-title_caps">Enlace del icono</label>
-	<input type="text" name="icon_link" id="icon_link" class="slds-input slds-input_bare slds-p-around_none">
-
+	<label for="icon_link" class="slds-form-element__label">Enlace del icono</label>
+	<div class="slds-form-element__control">
+		<input type="text" name="icon_link" id="icon_link" class="slds-input" placeholder="https://www.example.com/image.png">
+	</div>
 	<div class="drop_container">
-		<label class="slds-form-element__label slds-text-title_caps">Icono</label>
+		<label class="slds-form-element__label">Icono</label>
 		<div id="drop">
-		<img src="" id="image_preview" draggable="false">
-		<font id="image_size">192x192</font>
+			<img src="" id="image_preview" draggable="false">
+			<font id="image_size">192x192</font>
+			<div role="status" class="slds-spinner slds-spinner_medium" id="loading_image">
+				<span class="slds-assistive-text">Loading</span>
+				<div class="slds-spinner__dot-a"></div>
+				<div class="slds-spinner__dot-b"></div>
+			</div>
+			<span class="slds-icon_container slds-icon-utility-announcement" title="Error" id="error_image" style="text-align: center;position: relative;width: 100%;height: 100%;">
+				<svg class="slds-icon slds-icon-text-default error_icon" aria-hidden="true">
+					<use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#error"></use>
+				</svg>
+				<p style="font-size: 16px;position: absolute;top: 120px;">La imagen no se pudo cargar</p>
+			</span>
 		</div>
 	</div>
 	<input type="file" id="icon"></div>
@@ -135,26 +169,9 @@ function cancel(e){
 	e.preventDefault();
 }
 
-/*function preview_image(){
-	if(input.files && input.files[0]){
-		var reader = new FileReader();
-
-		reader.onload = function(e){
-			preview.display = 'block';
-			base64 = e.target.result;
-			preview.setAttribute('src', e.target.result);
-			preview.style.display = 'block';
-			image_size_font.style.display = 'none';
-		}
-		reader.readAsDataURL(input.files[0]);
-	}else{
-		preview.style.display = 'none';
-		image_size_font.style.display = 'block';
-		base64 = null;
-	}
-}*/
-
 function preview_image(image){
+	image_loading.show();
+	image_error.hide();
 	preview.display = 'block';
 	preview.setAttribute('src', image);
 	preview.style.display = 'block';
@@ -167,7 +184,17 @@ var input = document.getElementById('icon');
 var preview = document.getElementById('image_preview');
 var image_size_font = document.getElementById('image_size');
 var error_div = document.getElementById('error_div');
-	
+var image_loading = $('#loading_image');
+var image_error = $('#error_image');
+
+preview.onload = function(){
+	image_loading.hide();
+}
+preview.onerror = function(){
+	image_loading.hide();
+	image_error.show();
+	preview.style.display = 'none';
+}
 
 icon_link.addEventListener('change', e => {
 	var link = icon_link.value;

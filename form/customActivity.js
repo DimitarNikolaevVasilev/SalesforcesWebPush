@@ -30,7 +30,7 @@
 		$.ajax({
 			type: 'POST',
 			url: heroku_url + "/message_exists",
-			data: `{"id": "${id}"}`,
+			data: JSON.parse({"id": id}),
 			dataType: 'json',
 			contentType: 'application/json',
 			success: function(r){
@@ -99,6 +99,7 @@
 
 
 	function save() {
+		if($('#error_div').html().length)return connection.trigger('ready');
 		var title = $('#title').val();
 		var message = $('#message').val();
 		var icon = $('#icon_link').val();
@@ -133,7 +134,6 @@
 	}
 
 })();
-
 
 
 
