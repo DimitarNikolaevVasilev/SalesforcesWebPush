@@ -94,8 +94,12 @@
 		width: 4rem;
 		height: 4rem;
 	}
-	#error_image{
+	#error_image, #drop_down_onclick, .slds-tabs_scoped__content{
 		display: none;
+	}
+	#menu_text_onclick:hover, #menu_text_onclick:focus{
+		border-color: transparent;
+		cursor: default;
 	}
 </style>
 
@@ -118,20 +122,41 @@
 		<div class="slds-text-color_error"></div>
 	</div>
 	
-	<label class="slds-form-element__label click_event_label" for="click_event">Al pulsar</label>
-	<br>
-	<div class="slds-form-element__control">
-		<div class="slds-select_container">
-			<select class="slds-select" id="click_event">
-				<option value="open_url">Abrir enlace</option>
-			</select>
-		</div>
-	</div>
 
-	<div id="link_open_container" class="slds-form-element">
-		<label for="url" class="slds-form-element__label">Enlace</label>
-		<div class="slds-form-element__control">
-			<input type="text" name="url" id="url" class="slds-input" placeholder="https://www.example.com">
+
+	<div class="slds-tabs_scoped">
+		<ul class="slds-tabs_scoped__nav" role="tablist">
+			<li class="slds-tabs_scoped__item slds-tabs_scoped__overflow-button" title="More Tabs" role="presentation">
+				<div class="slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+					<button class="slds-button" aria-haspopup="true" id="onclick_button">Al pulsar<svg class="slds-button__icon slds-button__icon_x-small slds-button__icon_right" aria-hidden="true">
+							<use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#down"></use>
+						</svg>
+					</button>
+					<div class="slds-dropdown slds-dropdown_right" id="drop_down_onclick">
+						<ul class="slds-dropdown__list slds-dropdown_length-with-icon-10" role="menu">
+							<li class="slds-dropdown__item" role="presentation">
+								<a href="javascript:void(0);" class="onclick_option" role="menuitem" tabindex="-1">
+									<span class="slds-truncate" title="Abrir enlace" data-click_action="">No hacer nada</span>
+								</a>
+							</li>
+							<li class="slds-dropdown__item" role="presentation">
+								<a href="javascript:void(0);" class="onclick_option" role="menuitem" tabindex="1">
+									<span class="slds-truncate" title="Abrir enlace" data-click_action="open_url">Abrir enlace</span>
+								</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</li>
+			<li class="slds-tabs_scoped__item" title="Item Three" role="presentation">
+				<a class="slds-tabs_scoped__link" href="javascript:void(0);" data-click_action="" id="menu_text_onclick">No hacer nada</a>
+			</li>
+		</ul>
+		<div class="slds-tabs_scoped__content slds-show" role="tabpanel" id="onclick_tab_index1">
+			<label for="url" class="slds-form-element__label">Enlace</label>
+			<div class="slds-form-element__control">
+				<input type="text" name="url" id="url" class="slds-input" placeholder="https://www.example.com">
+			</div>
 		</div>
 	</div>
 
@@ -186,6 +211,29 @@ var image_size_font = document.getElementById('image_size');
 var error_div = document.getElementById('error_div');
 var image_loading = $('#loading_image');
 var image_error = $('#error_image');
+
+
+$('#onclick_button').click(function(){
+	$('#drop_down_onclick').toggle();
+});
+
+$('.onclick_option').click(function(){
+	var span = $(this).find('span');
+	var menu_text = $('#menu_text_onclick');
+	$('#drop_down_onclick').hide();
+	menu_text.text(span.text());
+	menu_text.attr('data-click_action', span.attr('data-click_action'));
+
+
+	$('.slds-tabs_scoped__content').hide();
+	var tab = $(this).attr('tabindex');
+	if(tab != '-1')$('#onclick_tab_index' + tab).show();
+});
+
+
+
+
+
 
 preview.onload = function(){
 	image_loading.hide();
