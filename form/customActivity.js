@@ -90,7 +90,7 @@
 		if(d.onclick){
 			try{
 				var onclick = JSON.parse(d.onclick);
-				gui_set_click_action(onclick.action):
+				gui_set_click_action(onclick.action);
 				if(onclick.action == 'open_url'){
 					$('#url').val(onclick.url);
 				}
