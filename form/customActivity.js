@@ -45,6 +45,28 @@
 	}
 
 
+	function gui_set_click_action(action){
+		var tab, text;
+		switch(action){
+			case 'open_url':
+				tab = 1;
+				text = 'Abrir enlace';
+			break;
+			case '':
+				tab = -1;
+				text = 'No hacer nada';
+			break;
+		}
+
+		var menu_text = $('#menu_text_onclick');
+
+		menu_text.text(text);
+		menu_text.attr('data-click_action', action);
+		$('.slds-tabs_scoped__content').hide();
+		if(tab != -1)$('#onclick_tab_index' + tab).show();
+	}
+
+
 	function initialize (data) {
 		console.log('initialize', data);
 
@@ -68,7 +90,7 @@
 		if(d.onclick){
 			try{
 				var onclick = JSON.parse(d.onclick);
-				$('#click_event').val(onclick.action);
+				gui_set_click_action(onclick.action):
 				if(onclick.action == 'open_url'){
 					$('#url').val(onclick.url);
 				}
@@ -77,6 +99,8 @@
 
 		if(d.icon){
 			var preview = $('#image_preview');
+			$('#loading_image').show();
+			$('#error_image').hide();
 			preview.attr('src', d.icon);
 			preview.css('display', 'block');
 			$('#icon_link').val(d.icon);
@@ -104,7 +128,7 @@
 		var message = $('#message').val();
 		var icon = $('#icon_link').val();
 		var onclick = {
-			action: $('#click_event').val()
+			action: $('#menu_text_onclick').attr('data-click_action')
 		}
 
 		if(onclick.action == 'open_url'){
