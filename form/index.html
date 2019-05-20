@@ -117,7 +117,8 @@
 	<div class="slds-form-element">
 		<label class="slds-form-element__label" for="message">Mensaje(<font style="color:red">*</font>)</label>
 		<div class="slds-form-element__control">
-			<textarea id="message" name="message" class="slds-textarea" placeholder="¿Cúal es su mensaje?" rows="5"></textarea>
+			<textarea id="message" name="message" class="slds-textarea" placeholder="¿Cúal es su mensaje?" rows="5" maxlength="130"></textarea>
+			<font id="message_rest_space"></font>
 		</div>
 		<div class="slds-text-color_error"></div>
 	</div>
@@ -215,6 +216,9 @@ var image_error = $('#error_image');
 
 $('#onclick_button').click(function(){
 	$('#drop_down_onclick').toggle();
+});
+$('#message').keyup(function(){
+	$('#message_rest_space').text((130 - this.value.length) + " carácteres restantes");
 });
 
 $('.onclick_option').click(function(){
