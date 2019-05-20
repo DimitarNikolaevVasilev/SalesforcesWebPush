@@ -3,16 +3,16 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>WebPush Custom Activity SMSC Integration</title>
+<title>WebPush Custom Activity</title>
 
 <script type="text/javascript" src="js/jquery.min.js"></script>
 <script type="text/javascript" src="js/postmonger.js"></script>
 <script type="text/javascript" src="customActivity.js"></script>
-<script type="text/javascript" src="js/custom_calendar.js"></script>
 <link rel="stylesheet" type="text/css" href="css/salesforce-lightning-design-system.min.css">
-<link rel="stylesheet" type="text/css" href="css/main.css">
-<link rel="stylesheet" type="text/css" href="css/samsung_fonts.css">
 
+
+
+<!--Styles-->
 <style type="text/css">
 	html{
 		background: white;
@@ -23,325 +23,250 @@
 		background: white;
 	}
 	.step {
-		display: block;
-	}
-	#template {
-		display: block;
-	}
-	#short_url_loading, #short_url_message, #loading_message, #message_test_error, #message_test_success{
 		display: none;
 	}
-	#short_url_button{
-		width: 200px;
-		height: 40px;
-		margin-right: 20px;
+	#step1 {
+		display: block;
 	}
-	#message_test_error, #message_test_success{
-		margin-top: 20px;
-	}
-	#phone_preview_container{
+	#drop{
+		width: 100%;
+		height: 100%;
 		position: relative;
-		width: 278px;
-		height: 400px;
-		float: left;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid #ccc;
+		border-radius: 10px;
 		font-family: "Salesforce Sans",Arial,sans-serif;
+		font-size: 24px;
+		line-height: 1.25;
+		color: #3e3e3c;
+		letter-spacing: .0625rem;
+		transition: all ease .3s;
 	}
-	#phone_preview_container img{
-		position: absolute;
+	.drop_container{
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		width: 192px;
+		height: 192px;
+		margin: 20px;
 	}
-	#message_preview{
-		-webkit-appearance: none;
-		-moz-appearance: none;
-		appearance: none;
-		background: transparent;
-		font-size: 13px;
-		color: black;
-		border: none;
-		outline: none;
-		resize: none;
-		position: absolute;
-		top: 74px;
-		left: 65px;
-		padding: 4px;
-		width: 182px;
-		height: 62px;
-		background: #ececec;
-		font-family: "Samsung Sans Light";
+	.drop_container label{
+		width: 100%;
+		text-align: center;
 	}
-	#sender_preview{
-		position: absolute;
-		width: 50px;
-		height: 20px;
-		top: 41px;
-		left: 52px;
-		letter-spacing: 1px;
-		color: #666;
-		font-weight: bold;
+	#icon{
+		display: none;
 	}
-	#time_preview{
+	#image_preview{
 		position: absolute;
-		left: 37px;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		border-radius: 10px;
+		display: none;
+	}
+	#image_size{
+		cursor: default;
+		user-select: none;
+	}
+	.click_event_label{
+		margin: 10px 0px;
+	}
+	#link_open_container{
+		margin: 20px;
+	}
+	#error_div{
+		color: red;
+		margin-top: 10px;
+		font-size: 15px;
+	}
+	#loading_image{
+		display: none;
+	}
+	.error_icon{
+		fill: rgb(212, 80, 76);
+		position: absolute;
+		left: 63px;
 		top: 20px;
-		font-size: 10px;
-		color: #666;
+		width: 4rem;
+		height: 4rem;
+	}
+	#error_image, #drop_down_onclick, .slds-tabs_scoped__content{
+		display: none;
+	}
+	#menu_text_onclick:hover, #menu_text_onclick:focus{
+		border-color: transparent;
 		cursor: default;
 	}
 </style>
+
 </head>
 <body>
-<form id="form" action="javascript:void(0)">
-<div id="template" class="step">
+<div id="step1" class="step">
 	<div class="slds-form-element">
-		<label class="slds-form-element__label" for="message">Message(<font style="color:red">*</font>)</label>
+		<label class="slds-form-element__label" for="title">Titulo(<font style="color:red">*</font>)</label>
 		<div class="slds-form-element__control">
-			<textarea id="message" name="message" class="slds-textarea" maxlength="160" placeholder="Type your message" rows="5"></textarea>
-			<font id="message_rest_space"></font>
+			<input type="text" id="title" name="title" placeholder="Titulo de su mensaje" class="slds-input" maxlength="30" />
 		</div>
 		<div class="slds-text-color_error"></div>
 	</div>
-	<div style="display: flex;margin-top: 10px;">
-		<button class="slds-button slds-button_brand" id="short_url_button">Add short URL</button>
-		<div class="slds-form-element" style="width: 100%">
+
+	<div class="slds-form-element">
+		<label class="slds-form-element__label" for="message">Mensaje(<font style="color:red">*</font>)</label>
+		<div class="slds-form-element__control">
+			<textarea id="message" name="message" class="slds-textarea" placeholder="¿Cúal es su mensaje?" rows="5"></textarea>
+		</div>
+		<div class="slds-text-color_error"></div>
+	</div>
+	
+
+
+	<div class="slds-tabs_scoped">
+		<ul class="slds-tabs_scoped__nav" role="tablist">
+			<li class="slds-tabs_scoped__item slds-tabs_scoped__overflow-button" title="More Tabs" role="presentation">
+				<div class="slds-dropdown-trigger slds-dropdown-trigger_click slds-is-open">
+					<button class="slds-button" aria-haspopup="true" id="onclick_button">Al pulsar<svg class="slds-button__icon slds-button__icon_x-small slds-button__icon_right" aria-hidden="true">
+							<use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#down"></use>
+						</svg>
+					</button>
+					<div class="slds-dropdown slds-dropdown_right" id="drop_down_onclick">
+						<ul class="slds-dropdown__list slds-dropdown_length-with-icon-10" role="menu">
+							<li class="slds-dropdown__item" role="presentation">
+								<a href="javascript:void(0);" class="onclick_option" role="menuitem" tabindex="-1">
+									<span class="slds-truncate" title="Abrir enlace" data-click_action="">No hacer nada</span>
+								</a>
+							</li>
+							<li class="slds-dropdown__item" role="presentation">
+								<a href="javascript:void(0);" class="onclick_option" role="menuitem" tabindex="1">
+									<span class="slds-truncate" title="Abrir enlace" data-click_action="open_url">Abrir enlace</span>
+								</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</li>
+			<li class="slds-tabs_scoped__item" title="Item Three" role="presentation">
+				<a class="slds-tabs_scoped__link" href="javascript:void(0);" data-click_action="" id="menu_text_onclick">No hacer nada</a>
+			</li>
+		</ul>
+		<div class="slds-tabs_scoped__content slds-show" role="tabpanel" id="onclick_tab_index1">
+			<label for="url" class="slds-form-element__label">Enlace</label>
 			<div class="slds-form-element__control">
-				<input type="text" id="short_url" placeholder="https://www.large_url.com" class="slds-input"/>
-			</div>
-			<div id="invalid_url" class="slds-text-color_error"></div>
-		</div>
-	</div>
-
-		<!--
-
-	<span class="slds-icon_container slds-icon-utility-announcement" title="Short URLS" id="short_url_message">
-		We have detected URLs in your message, Do you want to make them shorter? 
-		<button class="slds-button slds-button_brand" id="shorter_urls_in_message">Yes</button>
-		<svg class="slds-icon slds-icon-text-default" aria-hidden="true" style="width: 1.5rem; height: 1.5rem">
-			<use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#apex"></use>
-		</svg>
-	</span>
-		-->
-
-	<span id="short_url_loading">Loading...</span>
-	<div class="slds-form-element">
-		<label class="slds-form-element__label" for="footer">Footer</label>
-		<div class="slds-form-element__control">
-			<input type="text" id="footer" name="footer" placeholder="Type your footer" class="slds-input" />
-		</div>
-	</div>
-</div>
-
-
-<div id="delivery" class="step">
-	<div id="maintain_date" style="display: inline-block;">
-	  <div class="slds-form-element slds-dropdown-trigger slds-dropdown-trigger_click">
-		<label class="slds-form-element__label" for="date-input-id" style="display: block;">Maintain until</label>
-		<div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right custom_calendar_input_container" style="display: inline-block;">
-		  <input type="text" placeholder=" " class="slds-input" value="" id="maintain_date_value" name="maintain_date_value" />
-		  <button class="slds-button slds-button_icon slds-input__icon slds-input__icon_right" title="Select a date">
-			<svg class="slds-button__icon" aria-hidden="true">
-			  <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#event"></use>
-			</svg>
-			<span class="slds-assistive-text">Select a date</span>
-		  </button>
-		</div>
-		<div aria-hidden="false" aria-label="Date picker: June" class="slds-datepicker slds-dropdown slds-dropdown_left" role="dialog">
-		  <div class="slds-datepicker__filter slds-grid">
-			<div class="slds-datepicker__filter_month slds-grid slds-grid_align-spread slds-grow">
-			  <div class="slds-align-middle">
-				<button class="slds-button slds-button_icon slds-button_icon-container custom_prev_month" title="Previous Month">
-				  <svg class="slds-button__icon" aria-hidden="true">
-					<use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#left"></use>
-				  </svg>
-				  <span class="slds-assistive-text ">Previous Month</span>
-				</button>
-			  </div>
-			  <h2 aria-atomic="true" aria-live="assertive" class="slds-align-middle custom_month">June</h2>
-			  <div class="slds-align-middle">
-				<button class="slds-button slds-button_icon slds-button_icon-container custom_next_month" title="Next Month">
-				  <svg class="slds-button__icon" aria-hidden="true">
-					<use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#right"></use>
-				  </svg>
-				  <span class="slds-assistive-text">Next Month</span>
-				</button>
-			  </div>
-			</div>
-			<div class="slds-shrink-none">
-			  <label class="slds-assistive-text" for="maintain_date_year">Pick a Year</label>
-			  <div class="slds-select_container">
-				<select class="slds-select custom_year_select" id="maintain_date_year">
-				</select>
-			  </div>
-			</div>
-		  </div>
-		  <table aria-labelledby="month" aria-multiselectable="true" class="slds-datepicker__month" role="grid">
-			<thead>
-			  <tr class="weekdays">
-				<th scope="col">
-				  <abbr title="Sunday">Sun</abbr>
-				</th>
-				<th scope="col">
-				  <abbr title="Monday">Mon</abbr>
-				</th>
-				<th scope="col">
-				  <abbr title="Tuesday">Tue</abbr>
-				</th>
-				<th scope="col">
-				  <abbr title="Wednesday">Wed</abbr>
-				</th>
-				<th scope="col">
-				  <abbr title="Thursday">Thu</abbr>
-				</th>
-				<th scope="col">
-				  <abbr title="Friday">Fri</abbr>
-				</th>
-				<th scope="col">
-				  <abbr title="Saturday">Sat</abbr>
-				</th>
-			  </tr>
-			</thead>
-			<tbody class="custom_days_body">
-			</tbody>
-		  </table>
-		  <button class="slds-button slds-align_absolute-center slds-text-link custom_go_today">Today</button>
-		</div>
-		<div style="display: inline-block;">
-			<div style="position: relative">
-				<select id="maintain_hour" class="select_time_picker"></select>
-				<span class="slds-icon_container maintain_hour_icon slds-icon-utility-clock slds-input__icon slds-input__icon_right"><svg class="slds-icon slds-icon slds-icon_x-small slds-icon-text-default" aria-hidden="true"><use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#clock"></use></svg></span>
-			</div>
-		</div>
-		<div class="slds-text-color_error"></div>
-	  </div>
-
-	</div>
-	<br>
-	<br>
-	<div class="slds-form-element">
-		<label class="slds-form-element__label click_event_label" for="type">Type (<font style="color:red;">*</font>)</label>
-		<br>
-		<div class="slds-form-element__control">
-			<div class="slds-select_container">
-				<select class="slds-select" id="type" name="type">
-					<option value="" selected="selected">Please, select your type</option>
-					<option value="commercial">Commercial</option>
-					<option value="informative">Informative</option>
-					<option value="normative">Normative</option>
-					<option value="transactional">Transactional</option>
-				</select>
+				<input type="text" name="url" id="url" class="slds-input" placeholder="https://www.example.com">
 			</div>
 		</div>
 	</div>
-	<br>
-	<div class="slds-form-element">
-		<label class="slds-form-element__label  click_event_label" for="tern">Sender (<font style="color: red;">*</font>)</label>
-		<br>
-		<div class="slds-form-element__control">
-			<div class="slds-select_container">
-				<select class="slds-select" id="sender" name="sender">
-					<option value="" selected="selected">Please, select your sender</option>
-					<option value="672123423">672123423</option>
-					<option value="662533463">662533463</option>
-					<option value="672166553">672166553</option>
-				</select>
-			</div>
-		</div>
+
+
+	<label for="icon_link" class="slds-form-element__label">Enlace del icono</label>
+	<div class="slds-form-element__control">
+		<input type="text" name="icon_link" id="icon_link" class="slds-input" placeholder="https://www.example.com/image.png">
 	</div>
-</div>
-
-<div id="testing" class="step">
-	<div style="height: 90px;">
-		<div class="slds-form-element" style="display: inline-block;float: left">
-			<label class="slds-form-element__label " for="test_number">
-				Number
-			</label>
-
-			<div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right slds-border_bottom">
-				<svg class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default scm-anchor-right" aria-hidden="true">
-					<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="scm-anchor-right">
-						<path d="M4.4 15.4l4.1 4.1c.2.2.5.2.6 0L19.4 9.2c.2-.2.2-.4 0-.6l-4.1-4.1c-.2-.2-.4-.2-.6 0L4.4 14.8c-.2.2-.2.5 0 .6zM16.7 2.6c-.2.2-.2.5 0 .7l4 4c.2.2.5.2.7 0l1.1-1.1c.8-.7.8-1.8 0-2.6l-2.1-2.1c-.8-.8-1.9-.8-2.7 0l-1 1.1zM1 22.2c-.1.5.3.9.8.8l5-1.2c.2 0 .3-.1.4-.2l.1-.1c.1-.1.1-.4-.1-.6l-4.1-4.1c-.2-.2-.5-.2-.6-.1l-.1.1c-.1.1-.2.3-.2.4l-1.2 5z"></path>
-					</svg>
+	<div class="drop_container">
+		<label class="slds-form-element__label">Icono</label>
+		<div id="drop">
+			<img src="" id="image_preview" draggable="false">
+			<font id="image_size">192x192</font>
+			<div role="status" class="slds-spinner slds-spinner_medium" id="loading_image">
+				<span class="slds-assistive-text">Loading</span>
+				<div class="slds-spinner__dot-a"></div>
+				<div class="slds-spinner__dot-b"></div>
+			</div>
+			<span class="slds-icon_container slds-icon-utility-announcement" title="Error" id="error_image" style="text-align: center;position: relative;width: 100%;height: 100%;">
+				<svg class="slds-icon slds-icon-text-default error_icon" aria-hidden="true">
+					<use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#error"></use>
 				</svg>
-				<div><input type="text" id="test_number" maxlength="20" class="slds-input"></div>
-			</div>
-			<div class="slds-text-color_error"></div>
-		</div>
-		<button class="slds-button slds-button_brand" id="test_message_button" style="float: left;margin-top: 24px; margin-left: 20px;">Send one test message!</button>
-		<div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_success" role="alert" id="message_test_success">
-			<span class="slds-icon_container slds-icon-utility-error slds-m-right_x-small" title="Success">
-				<svg class="slds-icon slds-icon_x-small" aria-hidden="true">
-					<use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#success"></use>
-				</svg>
+				<p style="font-size: 16px;position: absolute;top: 120px;">La imagen no se pudo cargar</p>
 			</span>
-			<h2>Your message was successfully sent !</h2>
-			<div class="slds-notify__close">
-				<button class="slds-button slds-button_icon slds-button_icon-small slds-button_icon-inverse" title="Close" onclick="$('#message_test_success').hide();">
-					<svg class="slds-button__icon" aria-hidden="true">
-					<use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
-					</svg>
-					<span class="slds-assistive-text" >Close</span>
-				</button>
-			</div>
-		</div>
-
-		<div class="slds-notify slds-notify_alert slds-theme_alert-texture slds-theme_error" role="alert" id="message_test_error">
-			<span class="slds-assistive-text">error</span>
-			<span class="slds-icon_container slds-icon-utility-error slds-m-right_x-small" title="Description of icon when needed">
-			<svg class="slds-icon slds-icon_x-small" aria-hidden="true">
-				<use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#error"></use>
-			</svg>
-			</span>
-			<h2>There was an error ! Please, try again in a few minutes.</h2>
-			<div class="slds-notify__close">
-				<button class="slds-button slds-button_icon slds-button_icon-small slds-button_icon-inverse" title="Close" onclick="$('#message_test_error').hide();">
-				<svg class="slds-button__icon" aria-hidden="true">
-				<use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
-				</svg>
-				<span class="slds-assistive-text">Close</span>
-				</button>
-			</div>
 		</div>
 	</div>
-	<div id="phone_preview_container">
-		<img src="images/android_sms_preview_2.png">
-		<textarea id="message_preview" maxlength="160" spellcheck="false"></textarea>
-		<div id="sender_preview"></div>
-		<div id="time_preview"></div>
-	</div>
+	<input type="file" id="icon"></div>
+	<div id="error_div" class="slds-input slds-input_bare slds-p-around_none"></div>
 </div>
-<!--<div id="error_box" class="slds-text-color_error"></div>-->
-</form>
-<script>
+<script type="text/javascript">
+//var base64;
 (function(){
-	var year = new Date().getFullYear();
-	var c = new CustomCalendar($('#maintain_date'), {
-		years: {from: year, to: year + 50}
-	});
+function cancel(e){
+	e.stopPropagation();
+	e.preventDefault();
+}
 
-	$('#message').on('input',function(){
-		var v = this.value;
-		$('#message_preview').val(v);
-		$('#message_rest_space').text((160 - v.length) + " caracteres restantes");
-	});
-	$('#sender').change(function(){
-		$('#sender_preview').text(this.value);
-	});
+function preview_image(image){
+	image_loading.show();
+	image_error.hide();
+	preview.display = 'block';
+	preview.setAttribute('src', image);
+	preview.style.display = 'block';
+	image_size_font.style.display = 'none';
+}
 
-	$('#message_preview').each(function () {
-		this.setAttribute('style', 'height:' + (this.scrollHeight) + 'px;overflow-y:hidden;');
-		}).on('input', function () {
-		$('#message').val(this.value);
-		this.style.height = 'auto';
-		if(this.scrollHeight > 310)return this.style.height = '310px';
-		if(this.scrollHeight < 50)return this.style.height = '50px';
-		this.style.height = (this.scrollHeight) + 'px';
-	});
 
-	setInterval(change_time_preview, 60000);
-	function change_time_preview(){
-		var d = new Date();
-		$('#time_preview').text(d.getHours() + ':' + d.getMinutes());
+var icon_link = document.getElementById('icon_link');
+var input = document.getElementById('icon');
+var preview = document.getElementById('image_preview');
+var image_size_font = document.getElementById('image_size');
+var error_div = document.getElementById('error_div');
+var image_loading = $('#loading_image');
+var image_error = $('#error_image');
+
+
+$('#onclick_button').click(function(){
+	$('#drop_down_onclick').toggle();
+});
+
+$('.onclick_option').click(function(){
+	var span = $(this).find('span');
+	var menu_text = $('#menu_text_onclick');
+	$('#drop_down_onclick').hide();
+	menu_text.text(span.text());
+	menu_text.attr('data-click_action', span.attr('data-click_action'));
+
+
+	$('.slds-tabs_scoped__content').hide();
+	var tab = $(this).attr('tabindex');
+	if(tab != '-1')$('#onclick_tab_index' + tab).show();
+});
+
+
+
+
+
+
+preview.onload = function(){
+	image_loading.hide();
+}
+preview.onerror = function(){
+	image_loading.hide();
+	image_error.show();
+	preview.style.display = 'none';
+}
+
+icon_link.addEventListener('change', e => {
+	var link = icon_link.value;
+	error_div.innerHTML = '';
+	if(link.match(/[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/) != null){
+		if(link.split(':')[0] != 'https'){
+		    return error_div.innerHTML = 'El enlace de la imagen debe de ser HTTPS';	
+		}
+		preview_image(link);
+	}else{
+		preview.style.display = 'none';
+		image_size_font.style.display = 'block';
 	}
-	change_time_preview();
+});
+
+input.addEventListener('change', e => {
+	preview_image();
+});
+
+
 })();
+
+
+
 </script>
 </body>
 </html>
