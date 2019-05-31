@@ -20,7 +20,7 @@ self.addEventListener('push', event => {
   onclick = JSON.parse(data.onclick);
  }catch(err){}
 
- event.waitUntil(new Promise((resolve, reject) => {
+ return event.waitUntil(new Promise((resolve, reject) => {
   self.registration.showNotification(title, {
    body: message,
    tag: tag,
@@ -63,7 +63,8 @@ self.addEventListener('activate', event => {
 
 
 self.addEventListener('notificationclick', event => {
- event.waitUntil(new Promise((resolve, reject) => {
+ event.notification.close(); 
+ return event.waitUntil(new Promise((resolve, reject) => {
   self.registration.pushManager.getSubscription().then(subscription => {
    fetch(url + '/message_clicked',{
     method: 'POST',
@@ -95,4 +96,25 @@ self.addEventListener('notificationclick', event => {
  }));
  //console.log('On notification click: ', event.notification);
  //event.notification.close();
+});
+
+ 
+self.addEventListener('pushsubscriptionchange', function(){
+	return event.waitUntil(new Promise((resolve, reject) => {
+  		self.registration.pushManager.getSubscription().then(subscription => {
+			fetch(url + '/new', {
+				method: 'POST',
+				mode: 'cors',
+				body: JSON.stringify(subscription),
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			}).then(res => {
+				resolve();
+			}).catch(error => {
+				console.error(error);
+				reject();
+			});
+		});
+  	}));
 });
