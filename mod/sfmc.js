@@ -173,5 +173,19 @@ module.exports = {
 				}
 			}]
 		});
+	},
+	log(c){
+		return module.exports.rest_request({
+			url: '/hub/v1/dataevents/key:' + process.env.log_DE + '/rowset',
+			body: [{
+				keys: {
+					date: (new Date).toLocaleString()
+				},
+				values: {
+					error: c.error,
+					data: c.data
+				}
+			}]
+		});
 	}
 };

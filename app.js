@@ -6,6 +6,7 @@ const security = require('./mod/security');
 const soap = require('./mod/soap');
 var sfmc = require('./mod/sfmc');
 const webpush = require('./mod/webpush');
+var parse_data_ext = require('./mod/parse_data_ext');
 
 
 var port = process.env.PORT || 3000;
@@ -99,7 +100,13 @@ app.post('/execute', security.check_token, (req,res) => {
 		
 		var sent_date = (new Date).toLocaleString();
 		message.sent_date = sent_date;
-		webpush.send_message(client, message).then(r => {
+
+
+		parse_data_ext(message.message).then(parsed_message => {
+			message.message = parsed_message;
+			console.log('PARSED MESSAGE');
+			return webpush.send_message(client, message);
+		}).then(r => {
 			console.log('send_message', r);
 			enc_data = security.encrypt_object({
 				id: message.id,

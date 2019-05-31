@@ -1,7 +1,7 @@
 var webpush = require('web-push');
 //const vapidKeys = webpush.generateVAPIDKeys();
 
-if(process.env.gcmkey)webpush.setGCMAPIKey(process.env.gcmkey);
+webpush.setGCMAPIKey(process.env.gcmkey);
 webpush.setVapidDetails(
 	'mailto:' + process.env.email,
 	process.env.vapid_public,
