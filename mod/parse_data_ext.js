@@ -23,7 +23,7 @@ function sf_get(data, matches, arg){
 			
 			if(!response.Results)return reject({
 				data: matches[0],
-				error: 'Error: There are no rows with the property  ' + arg[2] + ' equals to ' + arg[3] + ' found in ' + arg[0];
+				error: 'Error: There are no rows with the property  ' + arg[2] + ' equals to ' + arg[3] + ' found in ' + arg[0]
 			});
 
 
