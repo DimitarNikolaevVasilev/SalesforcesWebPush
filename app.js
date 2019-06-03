@@ -89,30 +89,31 @@ app.post(/(publish|validate)/, security.check_token, (req, res) => {
 app.post('/execute', security.check_token, (req,res) => {
 	console.log('EXECTURE BODY: ', req.rawBody, req.body);
 	var arg = req.body.inArguments[0];
-	sfmc.get_message(arg.message_id)
-	.then(message => {
-		if(!message)return res.end();
-		var client = security.decrypt_object({
+	var message, client, sent_date, enc_data;
+	sfmc.get_message(arg.message_id).catch(err => {
+		err.chained = true;
+		return Promise.reject(err);
+	}).then(_message => {
+		message = _message;
+		client = security.decrypt_object({
 			p256dh: arg.p256dh,
 			endpoint: arg.endpoint,
 			auth: arg.auth
 		});
 		
-		var sent_date = (new Date).toLocaleString();
+		sent_date = (new Date).toLocaleString();
 		message.sent_date = sent_date;
-
-
-		parse_data_ext(message.message, arg).then(parsed_message => {
-			message.message = parsed_message;
-			console.log('PARSED MESSAGE');
-			return webpush.send_message(client, message);
-		}).then(r => {
+		return parse_data_ext(message.message, arg)
+	}).then(parsed_message => {
+		message.message = parsed_message;
+		console.log('PARSED MESSAGE');
+		return webpush.send_message(client, message).then(r => {
 			console.log('send_message', r);
 			enc_data = security.encrypt_object({
 				id: message.id,
 				sent: sent_date
 			});
-			sfmc.rest_request({
+			return sfmc.rest_request({
 				url: '/hub/v1/dataevents/key:webpush_tracking/rowset',
 				body: [{
 					keys: {
@@ -126,28 +127,32 @@ app.post('/execute', security.check_token, (req,res) => {
 						sent: enc_data.sent
 					}
 				}]
-			}).then(r => {
-				res.status(200).end();
 			}).catch(err => {
-				console.error(err);
-				res.status(500).end();
+				err.chained = true;
+				return Promise.reject(err);
 			});
 		}).catch(err => {
+			// log not need
+			if(err.chained)return Promise.reject(err);
 			if(err.statusCode == 404 || err.statusCode == 410){ // subscription expired or cancelled
-				res.status(200).end();
-				return sfmc.remove_client(client)
-				.then(r => {
+				return sfmc.remove_client(client).then(r => {
 					console.log("REMOVE CLIENT soap result request: ", r);
-					res.status(200).end();
 				}).catch(err => {
 					console.log("REMOVE CLIENT soap error request: ", err);
-					res.status(500).end();
 				});
 			}
-			console.log('webpush_subscriptions_error: ', err);
-			res.status(400).end();
 		});
-	})
+	}).catch(err => {
+		if(err.chained)return Promise.reject(err);
+		console.log('PARSE ERROR' + JSON.stringify(err));
+		return Promise.reject(err.error && err.data ? err : {error: err.message});
+	}).catch(err => {
+		sfmc.log(err);
+		console.log('LOGGING ERROR ', err);
+		res.status(400).end();
+	}).then(r => {
+		res.status(200).end();
+	});
 });
 
 

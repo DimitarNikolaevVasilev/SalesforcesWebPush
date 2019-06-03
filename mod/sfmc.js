@@ -65,6 +65,7 @@ module.exports = {
 		});
 	},
 	remove_client(client){
+		console.log('REMOVE_CLIENT ', client);
 		client_enc = security.encrypt_object(client);
 		var body = soap.data.delete_data_extension_row
 		.replace("{{USERNAME}}", process.env.username)
@@ -100,7 +101,6 @@ module.exports = {
 
 		return new Promise((resolve, reject) => {
 		 	soap.post_request(body).then(xml => {
-		 		console.log(xml);
 		 		try{
 		 			var data = wsdlParser.getXmlDataAsJson(xml);
 		 			var properties  = data.RetrieveResponseMsg.Results.Properties.Property;
@@ -110,10 +110,10 @@ module.exports = {
 		 			}
 		 			resolve(security.decrypt_object(message));
 		 		}catch(err) {
-		 			console.error(err);
-		 			resolve(false);
+		 			reject({error: `Message with id "${id}" was not found`});
 		 		};
 		 	}).catch(err => {
+		 		console.error(err);
 		 		reject(err);
 		 	});
 		})

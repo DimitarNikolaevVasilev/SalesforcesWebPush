@@ -30,16 +30,20 @@ function sf_get(data, matches, arg){
 
 
 			var property  = response.Results.Properties.Property;
+			console.log('PROPERTY: ', property);
 			data = data.replace(matches[0], property.Value);
 			resolve(data);
 		}).catch(err => {
+			console.log('CATCH ERROR', err);
 			reject(err);
 		});
 	});
 }
 
-function sf_get2(data, matches, arg, de){
+function sf_get_format(data, matches, arg, de){
 	reg.lastIndex = 0;
+	console.log('\n\nDE: ', de);
+	console.log('ARG: ', arg);
 	var new_data = `%%get("${arg[0]}", "${arg[1]}", "${arg[2]}", "${de[arg[3]]}")%%`;
 	var new_match = reg.exec(new_data);
 	var new_arg = make_args(new_match[2]);
@@ -47,14 +51,17 @@ function sf_get2(data, matches, arg, de){
 	console.log('SF_GET2', data);
 	return sf_get(data, new_match, new_arg);
 }
+function sf_get1(data, matches, arg, de){
+	console.log('SF_GET1: ', data, matches);
+	return Promise.resolve(data.replace(matches[0], de[arg[0]]));
+}
 
 function make_args(d){
-	var arg = d.split('",');
-	for(let i = 0;i < arg.length;i++){
-		arg[i] = arg[i].trim();
-		arg[i] = (i != arg.length - 1 ? arg[i].slice(1) : arg[i].slice(1, arg[i].length - 1));
-	}
-	return arg;
+	var args = [];
+	var arg;
+	var reg = /(['"`])((?:(?!\1).)*)\1/g;
+	while((arg = reg.exec(d)) != null)args.push(arg[2].trim());
+	return args;
 }
 
 
@@ -65,19 +72,20 @@ module.exports = function(data, de){
 	var match;
 	while((match = reg.exec(data)) != null)matches.push(match);
 	var i = 0;
-
+	console.log(matches);
 
 	function eject_f(){
 		var f_name = matches[i][1];
 		var arg = make_args(matches[i][2]);
 		var f;
 		switch(f_name){
-			case 'get': 
-				f = (arg.length == 4 ? sf_get2 : sf_get); 
+			case 'get':
+				f = (arg.length == 4 ? sf_get_format : sf_get1); 
 			break;
 		}
 		return f(data, matches[i], arg, de).then(new_data => {
 			data = new_data;
+			console.log('NEW DATA !!!1', new_data);
 			i++;
 			if(i == matches.length)return Promise.resolve(data);
 			return eject_f();
