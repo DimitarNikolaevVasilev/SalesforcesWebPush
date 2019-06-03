@@ -102,7 +102,7 @@ app.post('/execute', security.check_token, (req,res) => {
 		message.sent_date = sent_date;
 
 
-		parse_data_ext(message.message).then(parsed_message => {
+		parse_data_ext(message.message, arg).then(parsed_message => {
 			message.message = parsed_message;
 			console.log('PARSED MESSAGE');
 			return webpush.send_message(client, message);
