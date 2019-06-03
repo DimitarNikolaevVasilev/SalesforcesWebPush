@@ -1,15 +1,10 @@
-
+(function(){
 	'use strict';
 	var connection = new Postmonger.Session();
 	var payload = {};
-	var lastStepEnabled = false;
-	var steps = [ 
-		{ "label": "Defina su mensaje", "key": "step1" }
-	];
-	var currentStep = steps[0].key;
 	var heroku_url = "https://webpushnodejstest.herokuapp.com";
-	var custom_param_reg = /\%\%([a-zA-Z_]+) *\(((?: *"[a-zA-Z0-9_,' ]+", *)*(?:"[a-zA-Z0-9_,' ]+" *))\)\%\%/g;
-
+	var custom_param_reg = /\%\%([a-zA-Z_]+)\(((?: *(["'`])[a-zA-Z0-9_,. ]*\3 *, *)*(?: *(["`'])[a-zA-Z0-9_,. ]*\4 *))\)\%\%/g;
+	var eventDefinitionKey;
 
 	$(window).ready(onRender);
 
@@ -23,9 +18,13 @@
 		connection.trigger('ready');
 		connection.trigger('requestTokens');
 		connection.trigger('requestEndpoints');
+		connection.trigger('requestTriggerEventDefinition');
 	}
 
-
+	connection.on('requestedTriggerEventDefinition', function(event){
+		console.log(event);
+		eventDefinitionKey = event.eventDefinitionKey;
+	});
 	function generate_id(payload, callback){
 		var id = ( Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(3, 10)).slice(0,20);
 		$.ajax({
@@ -80,24 +79,23 @@
 		match = custom_param_reg.exec(data);
 		
 		while(match != null){
+			f = false;
 			var args = make_args(match[2]);
 			if(match[1] == 'get'){
-				if(args.length == 2){
-					f = sf_attr(args[0], args[1]);
-				}else if(args.length == 5){
-					f = `%%${match[1]}("${args[1]}","${args[2]}","${args[4]}","${sf_attr(args[0], args[3])}")%%`;
-				}else{
-					f = match[0];
+				if(args.length == 1){
+					f = sf_attr(args[0]);
+				}else if(args.length == 4){
+					f = `%%${match[1]}("${args[0]}","${args[1]}","${args[2]}","${sf_attr(args[3])}")%%`;
 				}
-				data = data.replace(match[0], f);
+				if(f)data = data.replace(match[0], f);
 			}
 			match = custom_param_reg.exec(data);
 		}
 		return data;
 	}
 
-	function sf_attr(de, attr){
-		return `{{Contact.Attribute.${de}.${attr}}}`;
+	function sf_attr(attr){
+		return `{{Event.${eventDefinitionKey}.${attr}}}`;
 	}
 
 	function message_preview(){
@@ -131,10 +129,10 @@
 			if(!match || match[1] != 'get')continue;
 			var args = make_args(match[2]);
 			
-			if(args.length == 2){
-				container.append(create_div(match[0], args[1], 'de_custom_prop_popup'));
-			}else{
-				container.append(create_div(match[0], args[2], 'de_custom_prop_comp_popup', 'de_custom_prop_comp'));
+			if(args.length == 1){
+				container.append(create_div(match[0], args[0], 'de_custom_prop_popup'));
+			}else if(args.length == 4){
+				container.append(create_div(match[0], args[1], 'de_custom_prop_comp_popup', 'de_custom_prop_comp'));
 			}
 		}while(match != null);
 	}
@@ -188,7 +186,7 @@
 			}else{
 				b.hide();
 			}
-		});
+		}).trigger('keyup');
 	}
 
 	function onClickedNext () {
@@ -230,15 +228,15 @@
 		generate_id(payload, function(){
 			payload['arguments'].execute.inArguments = [{
 				"message_id": payload['metaData'].data.message_id,
-				"contact_key": "{{Contact.Key}}",
 				"endpoint": "{{Contact.Attribute.webpush_subscriptions.endpoint}}",
 				"p256dh": "{{Contact.Attribute.webpush_subscriptions.p256dh}}",
-				"auth": "{{Contact.Attribute.webpush_subscriptions.auth}}"
+				"auth": "{{Contact.Attribute.webpush_subscriptions.auth}}",
+				"expirationTime": "{{Contact.Attribute.webpush_subscriptions.expirationTime}}",
+				"ip": "{{Contact.Attribute.webpush_subscriptions.ip}}",
+				"fecha_registro": "{{Contact.Attribute.webpush_subscriptions.fecha_registro}}"			
 			}];
 			payload['metaData'].isConfigured = true;
 			connection.trigger('updateActivity', payload);
 		});
 	}
-
-
-
+})();
