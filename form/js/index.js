@@ -1,3 +1,55 @@
+var custom_param_reg = /\%\%([a-zA-Z_]+)\(((?: *(["'`])[a-zA-Z0-9_,. ]*\3 *, *)*(?: *(["`'])[a-zA-Z0-9_,. ]*\4 *))\)\%\%/g;
+
+
+function make_args(d){
+	var arg = d.split('",');
+	for(let i = 0;i < arg.length;i++){
+		arg[i] = arg[i].trim();
+		arg[i] = (i != arg.length - 1 ? arg[i].slice(1) : arg[i].slice(1, arg[i].length - 1));
+	}
+	return arg;
+}
+
+function message_preview(){
+	var message = $('#message').val();
+	var container = $('#message_preview');
+
+	container.html('');
+	custom_param_reg.lastIndex = 0;
+	var lastIndex, index;
+
+
+	function create_font(d){
+		return $(`<font>${d}</font>`);
+	}
+	function create_div(full, prop, css_class_popup, css_class){
+		full = full.substring(2, full.length - 2);
+		return $(`
+			<div class="de_custom_prop ${css_class || ''}" onmouseover="show_popup({data:'${encodeURIComponent(full)}', class:'${css_class_popup}'})" onmouseout="hide_popup()">
+				<div class="de_custom_prop_data">${prop}</div>
+			</div>`);
+	}
+
+
+	do{
+		lastIndex = custom_param_reg.lastIndex;
+		var match = custom_param_reg.exec(message);
+		index = match ? match.index : message.length;
+
+		container.append(create_font(message.substring(lastIndex, index)));
+		
+		if(!match || match[1] != 'get')continue;
+		var args = make_args(match[2]);
+		
+		if(args.length == 1){
+			container.append(create_div(match[0], args[0], 'de_custom_prop_popup'));
+		}else if(args.length == 4){
+			container.append(create_div(match[0], args[1], 'de_custom_prop_comp_popup', 'de_custom_prop_comp'));
+		}
+	}while(match != null);
+}
+
+
 function show_popup(c){
 	var popup = $('#popup');
 	if(!c.html){
@@ -72,8 +124,8 @@ $('#onclick_button').click(function(){
 	$('#drop_down_onclick').toggle();
 });
 $('#message').keyup(function(){
-	$('#message_rest_space').text(this.value.length + " carácteres");
-	
+	$('#message_rest_space').text(this.value.length + " caracteres");
+
 });
 
 $('.onclick_option').click(function(){
@@ -93,9 +145,16 @@ $('.onclick_option').click(function(){
 
 $('#message_preview_button').click(function(){
 	$('#message_preview').css('height', parseFloat($('#message').css('height'))).toggleClass('message_preview_show');
-	this.innerHTML = (this.innerHTML == 'Vista previa' ?  'Ocultar vista previa' : 'Vista previa');
 	$('#message').toggleClass('hide_message');
 	message_preview();
+	
+	if(this.innerHTML == 'Vista previa'){
+		this.innerHTML = 'Ocultar vista previa';
+		$('#message_rest_space').text($('#message_preview').text().replace(/[\n\t]/gi,'').length + ' caracteres');
+	}else{
+		this.innerHTML = 'Vista previa';
+		$('#message').trigger('keyup');
+	}
 });
 
 
@@ -127,7 +186,15 @@ input.addEventListener('change', e => {
 	preview_image();
 });
 
-
+$('#message').keyup(function(){
+	var b = $('#message_preview_button');
+	custom_param_reg.lastIndex = 0;
+	if(custom_param_reg.exec(this.value) != null){
+		b.show();
+	}else{
+		b.hide();
+	}
+}).trigger('keyup');
 
 
 $(document).ready(function(){
