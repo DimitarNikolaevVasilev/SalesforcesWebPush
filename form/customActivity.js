@@ -105,7 +105,6 @@
 			$('#icon_link').val(d.icon);
 			$('#image_size').css('display','none');
 		}
-		$('#message').trigger('keyup');
 	}
 
 	function onClickedNext () {

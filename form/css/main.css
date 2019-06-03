@@ -97,6 +97,7 @@ body {
 	transform: rotateX(-90deg);
 	opacity: 0;
 	transition: transform .5s, opacity .5s;
+	overflow: hidden;
 }
 .message_preview_close{
 	position: absolute;
@@ -148,6 +149,7 @@ body {
 #message{
 	transition: transform .5s, opacity .5s;
 	transform: rotateX(0deg);
+	min-height: 50px;
 }
 
 .de_custom_prop{
