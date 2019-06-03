@@ -213,7 +213,7 @@ $('#message').keyup(function(){
 	}else{
 		b.hide();
 	}
-}).trigger('keyup');
+});
 
 
 $(document).ready(function(){
