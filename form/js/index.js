@@ -54,11 +54,11 @@ function message_preview(){
 					}else if(args.length == 4){
 						append = create_div(match[0], args[1], 'de_custom_prop_popup');
 					}else{
-						append = create_div(match[0], 'Error: get function accepts only 2 or 4 arguments', 'de_custom_prop_comp_popup', 'de_custom_prop_comp');
+						append = create_div(match[0], 'Error: "get" function accepts only 2 or 4 arguments', 'de_custom_prop_comp_popup', 'de_custom_prop_comp');
 					}
 				break;
 				default:
-					append = create_div(match[0], `Error: Function "${match[1]}" not recognized`, 'de_custom_prop_comp_popup', 'de_custom_prop_comp');
+					append = create_div(match[0], `Error: Function "${match[1]}" is not recognized`, 'de_custom_prop_comp_popup', 'de_custom_prop_comp');
 				break;
 			}
 
@@ -213,7 +213,7 @@ $('#message').keyup(function(){
 	}else{
 		b.hide();
 	}
-}).trigger('keyup');
+});
 
 
 $(document).ready(function(){

@@ -97,7 +97,6 @@ body {
 	transform: rotateX(-90deg);
 	opacity: 0;
 	transition: transform .5s, opacity .5s;
-	overflow: hidden;
 }
 .message_preview_close{
 	position: absolute;
@@ -149,7 +148,6 @@ body {
 #message{
 	transition: transform .5s, opacity .5s;
 	transform: rotateX(0deg);
-	min-height: 50px;
 }
 
 .de_custom_prop{
@@ -166,10 +164,10 @@ body {
 	background: rgba(0, 112, 210, 1);	
 }
 .de_custom_prop_comp{
-	background: rgba(210, 0,0,0.3);
+	/*background: rgba(210, 0,0,0.3);*/
 }
 .de_custom_prop_comp:hover{
-	background: rgba(210, 0,0,1);
+	/*background: rgba(210, 0,0,1);*/
 }
 
 .de_custom_prop_help{
@@ -184,7 +182,8 @@ body {
 }
 
 .de_custom_prop_comp_popup{
-	background: rgba(210, 0,0,1) !important;
+	/*background: rgba(210, 0,0,1) !important;*/
+	background: rgba(0, 112, 210, 1) !important;
 	color: white !important;
 }
 .de_custom_prop_popup{
