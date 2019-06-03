@@ -1,6 +1,8 @@
 var wsdlParser = require("wsdlrdr");
 var soap = require('./soap');
 
+var reg = /\%\%([a-zA-Z_]+)\(((?: *(["'`])[a-zA-Z0-9_,. ]*\3 *, *)*(?: *(["`'])[a-zA-Z0-9_,. ]*\4 *))\)\%\%/g;
+
 function sf_get(data, matches, arg){
 	var body = soap.data.get_value
 	.replace("{{USERNAME}}", process.env.username)
@@ -32,8 +34,18 @@ function sf_get(data, matches, arg){
 			resolve(data);
 		}).catch(err => {
 			reject(err);
-		})
+		});
 	});
+}
+
+function sf_get2(data, matches, arg, de){
+	reg.lastIndex = 0;
+	var new_data = `%%get("${arg[0]}", "${arg[1]}", "${arg[2]}", "${de[arg[3]]}")%%`;
+	var new_match = reg.exec(new_data);
+	var new_arg = make_args(new_match[2]);
+	var data = data.replace(matches[0], new_data);
+	console.log('SF_GET2', data);
+	return sf_get(data, new_match, new_arg);
 }
 
 function make_args(d){
@@ -47,8 +59,8 @@ function make_args(d){
 
 
 
-module.exports = function(data){
-	var reg = /\%\%([a-zA-Z_]+) *\(((?: *"[a-zA-Z0-9_,' ]+", *)*(?:"[a-zA-Z0-9_,' ]+" *))\)\%\%/g;
+module.exports = function(data, de){
+	reg.lastIndex = 0;
 	var matches = [];
 	var match;
 	while((match = reg.exec(data)) != null)matches.push(match);
@@ -60,9 +72,11 @@ module.exports = function(data){
 		var arg = make_args(matches[i][2]);
 		var f;
 		switch(f_name){
-			case 'get': f = sf_get; break;
+			case 'get': 
+				f = (arg.length == 4 ? sf_get2 : sf_get); 
+			break;
 		}
-		return f(data, matches[i], arg).then(new_data => {
+		return f(data, matches[i], arg, de).then(new_data => {
 			data = new_data;
 			i++;
 			if(i == matches.length)return Promise.resolve(data);
