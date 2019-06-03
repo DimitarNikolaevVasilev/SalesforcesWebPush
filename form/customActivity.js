@@ -3,7 +3,6 @@
 	var connection = new Postmonger.Session();
 	var payload = {};
 	var heroku_url = "https://webpushnodejstest.herokuapp.com";
-	var custom_param_reg = /\%\%([a-zA-Z_]+)\(((?: *(["'`])[a-zA-Z0-9_,. ]*\3 *, *)*(?: *(["`'])[a-zA-Z0-9_,. ]*\4 *))\)\%\%/g;
 	var eventDefinitionKey;
 
 	$(window).ready(onRender);
@@ -66,77 +65,6 @@
 		if(tab != -1)$('#onclick_tab_index' + tab).show();
 	}
 
-	function make_args(d){
-		var arg = d.split('",');
-		for(let i = 0;i < arg.length;i++){
-			arg[i] = arg[i].trim();
-			arg[i] = (i != arg.length - 1 ? arg[i].slice(1) : arg[i].slice(1, arg[i].length - 1));
-		}
-		return arg;
-	}
-	function lookup_custom_functions(data){
-		var match, f;
-		match = custom_param_reg.exec(data);
-		
-		while(match != null){
-			f = false;
-			var args = make_args(match[2]);
-			if(match[1] == 'get'){
-				if(args.length == 1){
-					f = sf_attr(args[0]);
-				}else if(args.length == 4){
-					f = `%%${match[1]}("${args[0]}","${args[1]}","${args[2]}","${sf_attr(args[3])}")%%`;
-				}
-				if(f)data = data.replace(match[0], f);
-			}
-			match = custom_param_reg.exec(data);
-		}
-		return data;
-	}
-
-	function sf_attr(attr){
-		return `{{Event.${eventDefinitionKey}.${attr}}}`;
-	}
-
-	function message_preview(){
-		var message = $('#message').val();
-		var container = $('#message_preview');
-
-		container.html('');
-		custom_param_reg.lastIndex = 0;
-		var lastIndex, index;
-
-
-		function create_font(d){
-			return $(`<font>${d}</font>`);
-		}
-		function create_div(full, prop, css_class_popup, css_class){
-			full = full.substring(2, full.length - 2);
-			return $(`
-				<div class="de_custom_prop ${css_class || ''}" onmouseover="show_popup({data:'${encodeURIComponent(full)}', class:'${css_class_popup}'})" onmouseout="hide_popup()">
-					<div class="de_custom_prop_data">${prop}</div>
-				</div>`);
-		}
-
-
-		do{
-			lastIndex = custom_param_reg.lastIndex;
-			var match = custom_param_reg.exec(message);
-			index = match ? match.index : message.length;
-
-			container.append(create_font(message.substring(lastIndex, index)));
-			
-			if(!match || match[1] != 'get')continue;
-			var args = make_args(match[2]);
-			
-			if(args.length == 1){
-				container.append(create_div(match[0], args[0], 'de_custom_prop_popup'));
-			}else if(args.length == 4){
-				container.append(create_div(match[0], args[1], 'de_custom_prop_comp_popup', 'de_custom_prop_comp'));
-			}
-		}while(match != null);
-	}
-
 
 	function initialize (data) {
 		console.log('initialize', data);
@@ -177,16 +105,6 @@
 			$('#icon_link').val(d.icon);
 			$('#image_size').css('display','none');
 		}
-
-		$('#message').keyup(function(){
-			var b = $('#message_preview_button');
-			custom_param_reg.lastIndex = 0;
-			if(custom_param_reg.exec(this.value) != null){
-				b.show();
-			}else{
-				b.hide();
-			}
-		}).trigger('keyup');
 	}
 
 	function onClickedNext () {
