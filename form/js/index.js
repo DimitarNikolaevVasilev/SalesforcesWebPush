@@ -216,6 +216,17 @@ $('#message').keyup(function(){
 });
 
 
+$('#message_help_button').mouseover(function(){
+	show_popup({
+		data: $('#custom_prop_doc').html(),
+		html: true,
+		hide_on_mouseout: true, 
+		effect: true,
+		disable_movement: true
+	});
+});
+
+
 $(document).ready(function(){
 	var xMousePos = 0;
 	var yMousePos = 0;

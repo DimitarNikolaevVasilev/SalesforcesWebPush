@@ -189,7 +189,11 @@ body {
 	background: rgba(0, 112, 210, 1) !important;
 	color: white !important;
 }
-
+#message_help_button{
+	float: right;
+	box-shadow: none;
+	cursor: default;
+}
 
 #popup{
 	display: none;
