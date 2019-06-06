@@ -1,17 +1,16 @@
 module.exports = function(){
 	var missing = false;
 	[
-		'de_password',
-		'server_domain',
-		'client_id',
-		'client_secret',
 		'SH256_KEY',
 		'username',
 		'password',
-		'gcmkey',
-		'email',
-		'vapid_public',
-		'vapid_private'
+		'server_domain',
+		'bitly_auth',
+		'bitly_url',
+		'bityl_user',
+		'client_id',
+		'client_secret',
+		'log_DE'
 	].forEach(d => {
 		if(!process.env[d]){
 			missing = true;
